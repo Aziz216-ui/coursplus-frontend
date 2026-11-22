@@ -1,0 +1,254 @@
+<!-- ============ HERO « éditorial » : grande carte arrondie, photo pleine largeur, voile crème à gauche ============ -->
+<section class="hero container">
+  <div class="hero-card" #hero>
+    <img class="hero-bg" [src]="photo.hero.src" [attr.srcset]="photo.hero.srcset" sizes="(max-width: 1200px) 100vw, 1200px" width="1200" height="800"
+         fetchpriority="high" alt="Un étudiant qui lit un livre à une table, entouré d’autres étudiants qui révisent" />
+    <div class="hero-veil" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <span class="pill-badge"><span class="dot" aria-hidden="true"></span> Cours alignés sur ESPRIT · ESC · FMT</span>
+      <!-- Variantes de titre plus punchy (non appliquées) :
+           1. « Tes cours de fac, enfin clairs. »
+           2. « Révise malin : les cours de ton université, expliqués par ceux qui les ont réussis. »
+           3. « Ton exam approche ? Les cours de ton université, expliqués en vidéo. » -->
+      <h1>Les cours de ton université, <span class="hl">expliqués</span>.</h1>
+      <p class="lead">Vidéos, résumés PDF et exercices d’examen, au cours ou à l’abonnement.</p>
+      <div class="row hero-actions">
+        <a routerLink="/cours" class="btn btn-accent btn-lg">Voir les cours <app-icon name="arrow-up-right" [size]="18" /></a>
+        <a href="#tarifs" class="btn btn-soft btn-lg">Nos formules</a>
+      </div>
+    </div>
+
+    <div class="hero-chip"><span class="dot" aria-hidden="true"></span> Accès à vie</div>
+  </div>
+</section>
+
+<!-- ============ COURS À LA UNE : sélection seulement, le catalogue complet est sur /cours ============ -->
+<section class="section" id="cours-a-la-une" appReveal>
+  <div class="container">
+    <div class="row between mb">
+      <h2 class="flush">Cours à la une</h2>
+      <a routerLink="/cours" class="btn btn-outline btn-sm">Voir tous les cours <app-icon name="chevron-right" [size]="16" /></a>
+    </div>
+    @if (featured().length) {
+      <div class="course-grid">
+        @for (c of featured(); track c.id) { <app-course-card [course]="c" /> }
+      </div>
+    } @else {
+      <div class="course-grid" role="status" aria-label="Chargement des cours">
+        @for (i of skeletons; track i) {
+          <div class="skeleton-card"><div class="sk sk-cover"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ============ POURQUOI COURSPLUS (3 arguments qualitatifs) ============ -->
+<section class="section warm" id="pourquoi" appReveal>
+  <div class="container args-grid">
+    <img class="arch-photo" [src]="photo.students.src" [attr.srcset]="photo.students.srcset" sizes="(max-width: 900px) 280px, 380px" width="1200" height="800"
+         loading="lazy" alt="Deux étudiantes qui discutent de leurs notes sur le campus" />
+    <div>
+      <h2>Pourquoi CoursPlus</h2>
+      <ul class="arg-list">
+        @for (a of arguments; track a.title) {
+          <li>
+            <span class="arg-icon"><app-icon [name]="a.icon" [size]="22" /></span>
+            <div><h3>{{ a.title }}</h3><p class="muted">{{ a.text }}</p></div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMENT ÇA MARCHE ============ -->
+<section class="section" id="comment-ca-marche" appReveal>
+  <div class="container">
+    <h2 class="center">Comment ça marche</h2>
+    <ol class="steps">
+      <li><span class="step-num">1</span><h3>Choisis ton université et ton cours</h3><p class="muted">Filtre par université, filière ou enseignant.</p></li>
+      <li><span class="step-num">2</span><h3>Apprends avec vidéos, résumés PDF et exercices d’examen</h3><p class="muted">À ton rythme, sur téléphone ou ordinateur.</p></li>
+      <li><span class="step-num">3</span><h3>Révise et réussis ton examen</h3><p class="muted">Exercices corrigés dans le style de tes examens.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ TARIFS ============ -->
+<section class="section warm" id="tarifs" appReveal>
+  <div class="container">
+    <h2 class="center">Choisis ta façon d’apprendre</h2>
+    <p class="lead center mx-auto">Trois modes d’apprentissage, selon l’accompagnement dont tu as besoin.</p>
+    <div class="plans">
+      <article class="plan">
+        <span class="mode">Autonome</span>
+        <h3>Par cours</h3>
+        <p class="plan-price">{{ fromCoursePrice() }}</p>
+        <ul class="ticks">
+          <li><app-icon name="check" [size]="16" /> Accès à vie à un cours</li>
+          <li><app-icon name="check" [size]="16" /> Vidéos, résumés PDF et exercices</li>
+          <li><app-icon name="check" [size]="16" /> Tu paies uniquement ce que tu choisis</li>
+        </ul>
+        <a routerLink="/cours" class="btn btn-outline btn-block">Voir les cours</a>
+      </article>
+
+      <article class="plan featured">
+        <span class="ribbon pop">Meilleur rapport qualité-prix</span>
+        <span class="mode">Accompagné</span>
+        <h3>Abonnement mensuel</h3>
+        <p class="plan-price">{{ fromMonthlyPrice() }}</p>
+        <ul class="ticks">
+          <li><app-icon name="check" [size]="16" /> Tous les cours d’un enseignant ou d’une filière</li>
+          <li><app-icon name="check" [size]="16" /> Accès pendant la durée de l’abonnement</li>
+          <li><app-icon name="check" [size]="16" /> Nouveaux cours inclus automatiquement</li>
+          @if (valueExample()) { <li><app-icon name="check" [size]="16" /> {{ valueExample() }}</li> }
+        </ul>
+        <a href="#enseignants" class="btn btn-accent btn-block">Choisir un enseignant</a>
+      </article>
+
+      <article class="plan">
+        <span class="ribbon gold">Bientôt · Places limitées</span>
+        <span class="mode">Coaché</span>
+        <h3>Premium</h3>
+        <p class="plan-price">Prix communiqué à l’ouverture</p>
+        <ul class="ticks">
+          <li><app-icon name="check" [size]="16" /> Tout l’abonnement mensuel</li>
+          <li><app-icon name="check" [size]="16" /> Chat privé avec l’enseignant</li>
+          <li><app-icon name="check" [size]="16" /> Correction de devoirs et lives en groupe</li>
+          <li><app-icon name="check" [size]="16" /> 15 à 20 étudiants max par enseignant, avec liste d’attente</li>
+        </ul>
+        <button type="button" class="btn btn-outline btn-block" aria-haspopup="dialog" (click)="waitlist.set('premium')">Liste d’attente à l’ouverture</button>
+      </article>
+    </div>
+    <p class="trust-line"><span class="trust-label"><app-icon name="shield" [size]="18" /> Paiement sécurisé :</span>
+      <span class="pay-chips">
+      <span class="pay-chip"><app-icon name="card" [size]="14" /> Carte bancaire</span>
+      <span class="pay-chip">e-DINAR</span>
+      <span class="pay-chip"><app-icon name="phone" [size]="14" /> D17</span>
+      </span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ ENSEIGNANTS (profils complets uniquement) ============ -->
+@if (teacherCards().length) {
+  <section class="section" id="enseignants" appReveal>
+    <div class="container">
+      <h2>Nos enseignants</h2>
+      <p class="lead">Des professionnels qui pratiquent ce qu’ils enseignent.</p>
+      <div class="teacher-grid">
+        @for (c of teacherCards(); track c.t.id) {
+          <article class="teacher-card">
+            <app-avatar [name]="c.t.fullName" [specialty]="c.t.specialty" [photoUrl]="c.photo" [size]="72" />
+            <h3>{{ c.t.fullName }}</h3>
+            <span class="badge primary">{{ c.t.specialty }}</span>
+            <p class="bio small muted">{{ c.t.bio }}</p>
+            @if (c.unis.length) {
+              <div class="row uni-chips">@for (u of c.unis; track u) { <span class="badge">{{ u }}</span> }</div>
+            }
+            <div class="row between t-foot">
+              <span class="small"><strong>{{ c.t.courseCount }}</strong> cours</span>
+              <button class="btn btn-outline btn-sm" type="button" (click)="pickTeacher(c.t.id)">Voir ses cours</button>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ============ PARENTS / LYCÉENS ============ -->
+<section class="section warm" id="parents" appReveal>
+  <div class="container">
+    <div class="parents">
+      <div>
+        <h2>Parents : un soutien sérieux pour le bac</h2>
+        <p class="lead">Des enseignants identifiés et un programme suivi, pour que votre enfant ne reste pas bloqué.</p>
+        <ul class="subjects">
+          <li>Maths</li><li>SVT</li><li>Éco-gestion</li><li>Info</li>
+        </ul>
+        <ul class="ticks">
+          <li><app-icon name="check" [size]="16" /> Suivi de la progression</li>
+          <li><app-icon name="check" [size]="16" /> Enseignants identifiés et qualifiés</li>
+        </ul>
+        @if (lyceeUniversity()) {
+          <button type="button" class="btn btn-outline" (click)="discoverLycee()">Découvrir l’offre lycée</button>
+        } @else {
+          <div class="row">
+            <button type="button" class="btn btn-outline" aria-haspopup="dialog" (click)="waitlist.set('lycee')">Être prévenu à l’ouverture</button>
+            <span class="badge gold-badge">Bientôt</span>
+          </div>
+        }
+      </div>
+      <img class="parents-photo" [src]="photo.parents.src" [attr.srcset]="photo.parents.srcset" sizes="(max-width: 900px) 280px, 340px" width="1200" height="800"
+           loading="lazy" alt="Lycéen qui révise ses cours à la maison, un stylo à la main" />
+    </div>
+  </div>
+</section>
+
+<!-- ============ TÉMOIGNAGES (vrais avis ; exemples « À REMPLACER » seulement en développement) ============ -->
+@if (showTestimonials && testimonials.length) {
+  <section class="section" id="temoignages" appReveal>
+    <div class="container">
+      <div class="row between mb">
+        <h2 class="flush">Ils ont réussi leurs cours</h2>
+        <div class="row">
+          <button class="btn btn-ghost btn-icon" type="button" aria-label="Témoignages précédents" (click)="scrollTrack(track, -1)"><app-icon name="arrow-left" [size]="18" /></button>
+          <button class="btn btn-ghost btn-icon" type="button" aria-label="Témoignages suivants" (click)="scrollTrack(track, 1)"><app-icon name="chevron-right" [size]="18" /></button>
+        </div>
+      </div>
+      <div class="slider" #track tabindex="0" aria-label="Témoignages">
+        @for (t of testimonials; track $index) {
+          <figure class="quote">
+            @if (testimonialsAreSamples) { <span class="badge warning sample-flag">Exemple, à remplacer</span> }
+            <blockquote>« {{ t.quote }} »</blockquote>
+            <figcaption><strong>{{ t.firstName }}</strong>, {{ t.university }} · {{ t.course }}</figcaption>
+          </figure>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ============ FAQ ============ -->
+<section class="section warm" id="faq" appReveal>
+  <div class="container"><div class="faq-wrap">
+    <h2 class="center">Questions fréquentes</h2>
+    <div class="faq-list">
+      @for (f of faq; track f.q) {
+        <details class="faq-item">
+          <summary><span>{{ f.q }}</span><app-icon name="plus" [size]="20" /></summary>
+          <p>{{ f.a }}@if (f.link; as l) { <a [href]="l.href" target="_blank" rel="noopener"> {{ l.text }}</a> }</p>
+        </details>
+      }
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ DEVENIR ENSEIGNANT ============ -->
+<section class="section snug" id="devenir-enseignant" appReveal>
+  <div class="container">
+    <div class="teach-cta">
+      <div class="teach-text">
+        <h2>Tu es professionnel ?</h2>
+        <p>Partage ton expérience, on s’occupe de la technique et du marketing.</p>
+        <a class="btn btn-gold btn-lg" routerLink="/inscription-enseignant">Devenir enseignant</a>
+      </div>
+      <img class="teach-photo" [src]="photo.teacher.src" [attr.srcset]="photo.teacher.srcset" sizes="(max-width: 760px) 90vw, 480px" width="1200" height="675"
+           loading="lazy" alt="Médecin en blouse qui donne un cours en visio depuis son bureau" />
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOBILE : bouton « Créer mon compte » collant (visible après le hero, jamais sur le footer) ============ -->
+@if (!auth.isLoggedIn()) {
+  <div class="sticky-cta" [class.show]="showSticky()">
+    <a routerLink="/inscription" class="btn btn-accent btn-lg">Créer mon compte</a>
+  </div>
+}
+
+<!-- ============ LISTE D'ATTENTE (Premium / offre lycée) ============ -->
+@if (waitlist(); as list) {
+  <app-waitlist-modal [list]="list" [universities]="waitlistUniversities()" (close)="waitlist.set(null)" />
+}

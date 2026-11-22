@@ -1,0 +1,80 @@
+<section class="container search-zone">
+  <h1 class="mb">Tous les cours</h1>
+  <div class="filters" role="search">
+    <div class="search-bar">
+      <div class="search-wrap">
+        <app-icon name="search" [size]="20" />
+        <input id="q" class="input" type="search" aria-label="Rechercher un cours" placeholder="Rechercher un cours…"
+               [ngModel]="q()" (ngModelChange)="onQueryChange($event)" />
+      </div>
+      <button type="button" class="btn btn-outline filters-btn" (click)="filtersOpen.set(!filtersOpen())"
+              [attr.aria-expanded]="filtersOpen()" aria-controls="adv-filters">
+        <app-icon name="sliders" [size]="16" /> <span class="filters-label">Filtres</span>
+        @if (advancedCount()) { <span class="count-dot">{{ advancedCount() }}</span> }
+      </button>
+    </div>
+
+    <div class="school-row">
+      <div class="school-tabs" role="group" aria-label="Filtrer par université">
+        <button type="button" class="tab" [class.active]="!universityId()" [attr.aria-pressed]="!universityId()" (click)="onUniversityChange(null)">Tous</button>
+        @for (u of universities(); track u.id) {
+          <button type="button" class="tab" [class.active]="universityId() === u.id" [attr.aria-pressed]="universityId() === u.id" (click)="onUniversityChange(u.id)">{{ u.code }}</button>
+        }
+      </div>
+      <div class="chips" aria-label="Recherches populaires">
+        <span class="muted small">Populaires :</span>
+        @for (term of popular; track term) {
+          <button type="button" class="chip-btn" (click)="useChip(term)">{{ term }}</button>
+        }
+      </div>
+    </div>
+
+    @if (filtersOpen()) {
+      <div class="adv-grid" id="adv-filters">
+        <div class="field">
+          <label for="track">Filière</label>
+          <select id="track" class="input" [ngModel]="trackId()" (ngModelChange)="trackId.set($event); search()"
+                  [disabled]="!universityId()" aria-describedby="track-hint">
+            <option [ngValue]="null">Toutes</option>
+            @for (t of tracks(); track t.id) { <option [ngValue]="t.id">{{ t.name }}</option> }
+          </select>
+          @if (!universityId()) { <p id="track-hint" class="field-hint">Choisis d’abord une université</p> }
+        </div>
+        <div class="field">
+          <label for="teacher">Enseignant</label>
+          <select id="teacher" class="input" [ngModel]="teacherId()" (ngModelChange)="teacherId.set($event); search()">
+            <option [ngValue]="null">Tous</option>
+            @for (t of teachers(); track t.id) { <option [ngValue]="t.id">{{ t.fullName }}</option> }
+          </select>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section" id="catalogue">
+  <div class="container">
+    <div class="row between mb">
+      <h2 class="flush" aria-live="polite">{{ heading() }}</h2>
+      @if (hasFilters()) { <button class="btn btn-ghost btn-sm" type="button" (click)="reset()">Effacer les filtres</button> }
+    </div>
+
+    @if (loading()) {
+      <div class="course-grid" role="status" aria-label="Chargement des cours">
+        @for (i of skeletons; track i) {
+          <div class="skeleton-card"><div class="sk sk-cover"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
+        }
+      </div>
+    } @else if (courses().length === 0) {
+      <div class="empty card flat">
+        <svg class="empty-art" viewBox="0 0 120 90" width="120" height="90" aria-hidden="true"><rect x="10" y="14" width="100" height="62" rx="10" fill="var(--cp-navy-10)"/><circle cx="52" cy="44" r="14" fill="none" stroke="var(--cp-navy)" stroke-width="4"/><path d="m63 55 14 14" stroke="var(--cp-sun)" stroke-width="5" stroke-linecap="round"/></svg>
+        <p>Aucun cours ne correspond à ta recherche pour le moment.</p>
+        <button class="btn btn-primary btn-sm" type="button" (click)="reset()">Réinitialiser les filtres</button>
+      </div>
+    } @else {
+      <div class="course-grid">
+        @for (c of courses(); track c.id) { <app-course-card [course]="c" /> }
+      </div>
+    }
+  </div>
+</section>

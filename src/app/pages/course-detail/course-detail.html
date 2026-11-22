@@ -1,0 +1,111 @@
+@if (notFound()) {
+  <div class="container page empty">
+    <div class="empty-icon"><app-icon name="search" [size]="26" /></div>
+    <p>Ce cours n’existe pas ou n’est plus disponible.</p>
+    <a routerLink="/cours" class="btn btn-ghost">Retour au catalogue</a>
+  </div>
+} @else if (course(); as c) {
+  <section class="head" [style.--uni]="uniColor(c.universityCode)">
+    <div class="container">
+      <a routerLink="/cours" class="small back with-icon"><app-icon name="arrow-left" [size]="16" /> Catalogue</a>
+      <div class="row tags">
+        @if (c.universityCode) { <span class="badge primary">{{ c.universityCode }}</span> }
+        @if (c.trackName) { <span class="badge">{{ c.trackName }}</span> }
+        @if (!c.published) { <span class="badge warning">Non publié</span> }
+      </div>
+      <h1>{{ courseTitle(c.title) }}</h1>
+      <div class="by"><app-avatar [name]="c.teacher.fullName" [specialty]="c.teacher.specialty" [size]="44" /><p class="flush">Par <strong>{{ c.teacher.fullName }}</strong><br><span class="muted small">{{ c.teacher.specialty }} · {{ plural(c.teacher.courseCount, 'cours', 'cours') }} sur CoursPlus</span></p></div>
+    </div>
+  </section>
+
+  <div class="container page layout">
+    <div class="main">
+      <div class="card">
+        <h2>À propos de ce cours</h2>
+        <p class="desc">{{ c.description }}</p>
+      </div>
+
+      <details class="card mt programme" open>
+        <summary><h2 class="flush">Programme · {{ plural(c.lessons.length, 'vidéo') }}</h2><app-icon name="chevron-down" [size]="20" /></summary>
+        <ol class="lessons">
+          @for (l of c.lessons; track l.id) {
+            <li>
+              <span class="num">{{ l.position }}</span>
+              <span class="grow">{{ l.title }}</span>
+              @if (c.hasAccess) {
+                <a class="btn btn-ghost btn-sm" [routerLink]="['/cours', c.id, 'apprendre']" [queryParams]="{ lecon: l.id }"><app-icon name="play" [size]="14" /> Regarder</a>
+              } @else if (l.freePreview) {
+                <a class="badge accent" [routerLink]="['/cours', c.id, 'apprendre']" [queryParams]="{ lecon: l.id }"><app-icon name="play" [size]="12" /> Aperçu gratuit</a>
+              } @else {
+                <span class="muted" title="Réservé aux inscrits"><app-icon name="lock" [size]="16" /><span class="sr-only">Leçon verrouillée</span></span>
+              }
+            </li>
+          }
+        </ol>
+      </details>
+
+      @if (c.documents.length) {
+        <div class="card mt">
+          <h2>Documents inclus</h2>
+          <ul class="docs">
+            @for (d of c.documents; track d.id) {
+              <li><app-icon name="file" [size]="18" /> <span class="grow">{{ d.title }}</span> <span class="badge">{{ d.type === 'SUMMARY' ? 'Résumé' : 'Exercices' }}</span></li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="card mt teacher">
+        <h2>L’enseignant</h2>
+        <h3 class="flush">{{ c.teacher.fullName }}</h3>
+        <p class="muted small">{{ c.teacher.specialty }}, {{ plural(c.teacher.courseCount, 'cours', 'cours') }}</p>
+        <p>{{ c.teacher.bio }}</p>
+      </div>
+    </div>
+
+    <aside class="side" aria-label="Acheter ce cours">
+      @if (c.hasAccess) {
+        <div class="card buy">
+          <span class="badge success"><app-icon name="check" [size]="14" /> Tu as accès à ce cours</span>
+          <a class="btn btn-primary btn-block mt" [routerLink]="['/cours', c.id, 'apprendre']">Commencer le cours</a>
+        </div>
+      } @else {
+        <div class="card buy">
+          <h2 class="buy-title">Choisis ta formule</h2>
+          @for (o of c.offers; track o.offerType) {
+            <button class="offer" type="button" [class.main]="o.offerType === 'COURSE'" (click)="choose(o)">
+              <span class="grow offer-text">
+                <strong>{{ o.label }}</strong>
+                <span class="small muted">{{ o.description }}</span>
+              </span>
+              <span class="price">{{ dt(o.price) }}@if (o.offerType !== 'COURSE') {<small>/mois</small>}</span>
+            </button>
+          }
+          <p class="small muted tight with-icon"><app-icon name="shield" [size]="16" /> Paiement sécurisé : carte, e-DINAR, wallet Konnect ou D17.</p>
+        </div>
+      }
+    </aside>
+  </div>
+
+  @if (selectedOffer(); as o) {
+    <div class="overlay" (click)="selectedOffer.set(null)">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pay-title" (click)="$event.stopPropagation()" (keydown.escape)="selectedOffer.set(null)">
+        <h2 id="pay-title">Comment veux-tu payer ?</h2>
+        <p class="muted">{{ o.label }}, <strong>{{ dt(o.price) }}</strong></p>
+        <div class="stack mt">
+          <button class="method" type="button" (click)="pay('KONNECT')" [disabled]="paying()" autofocus>
+            <strong class="with-icon"><app-icon name="card" [size]="18" /> Paiement en ligne</strong>
+            <span class="small muted">Carte bancaire, e-DINAR ou wallet Konnect, accès immédiat</span>
+          </button>
+          <button class="method" type="button" (click)="pay('MANUAL')" [disabled]="paying()">
+            <strong class="with-icon"><app-icon name="phone" [size]="18" /> D17, virement ou espèces</strong>
+            <span class="small muted">Accès activé après validation par l’équipe</span>
+          </button>
+        </div>
+        <button class="btn btn-ghost btn-block mt" type="button" (click)="selectedOffer.set(null)">Annuler</button>
+      </div>
+    </div>
+  }
+} @else {
+  <div class="loading" role="status">Chargement…</div>
+}

@@ -1,0 +1,130 @@
+<div class="container page">
+  <a routerLink="/enseignant" class="small muted with-icon"><app-icon name="arrow-left" [size]="16" /> Espace enseignant</a>
+  <div class="row between head-gap">
+    <h1 class="flush">{{ isNew() ? 'Nouveau cours' : course()?.title }}</h1>
+    @if (course(); as c) {
+      <div class="row">
+        @if (c.published) { <span class="badge success">Publié</span> } @else { <span class="badge warning">Brouillon</span> }
+        <a [routerLink]="['/cours', c.id]" class="btn btn-ghost btn-sm">Voir la page</a>
+        <button class="btn btn-sm" [class.btn-primary]="!c.published" [class.btn-ghost]="c.published" (click)="togglePublish()">
+          {{ c.published ? 'Dépublier' : 'Publier' }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <div [class.layout]="!isNew()">
+    <!-- Informations du cours -->
+    <form class="card" (ngSubmit)="save()">
+      <h2>Informations</h2>
+      <div class="field">
+        <label for="title">Titre du cours</label>
+        <input id="title" name="title" class="input" [(ngModel)]="form.title" required placeholder="Ex. Mathématiques financières" />
+      </div>
+      <div class="field">
+        <label for="desc">Description</label>
+        <textarea id="desc" name="description" class="input" [(ngModel)]="form.description"
+                  placeholder="Ce que l'étudiant va apprendre, pour quel examen, quel niveau…"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="uni">Université</label>
+          <select id="uni" name="universityId" class="input" [ngModel]="form.universityId" (ngModelChange)="onUniChange($event)">
+            <option [ngValue]="null">Aucune</option>
+            @for (u of universities(); track u.id) { <option [ngValue]="u.id">{{ u.code }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label for="track">Filière</label>
+          <select id="track" name="trackId" class="input" [(ngModel)]="form.trackId" [disabled]="!selectedUni()">
+            <option [ngValue]="null">Aucune</option>
+            @for (t of tracks(); track t.id) { <option [ngValue]="t.id">{{ t.name }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label for="price">Prix du cours (DT)</label>
+          <input id="price" name="price" type="number" min="0" step="1" class="input" [(ngModel)]="form.price" required />
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" [disabled]="saving() || !form.title || form.price === null">
+          {{ isNew() ? 'Créer le cours' : 'Enregistrer' }}
+        </button>
+        @if (!isNew()) { <span class="spacer"></span><button type="button" class="btn btn-danger btn-sm" (click)="remove()">Supprimer le cours</button> }
+      </div>
+      @if (isNew()) { <p class="small muted mt">Après la création, tu pourras ajouter les vidéos et les PDF, puis publier le cours.</p> }
+    </form>
+
+    @if (course(); as c) {
+      <div class="stack">
+        <!-- Vidéos -->
+        <div class="card">
+          <h2>Vidéos ({{ c.lessons.length }})</h2>
+          @for (l of c.lessons; track l.id) {
+            <div class="lesson">
+              <span class="badge">{{ l.position }}</span>
+              <span class="grow">{{ l.title }}</span>
+              <label class="checkbox small" title="Visible sans achat">
+                <input type="checkbox" [checked]="l.freePreview" (change)="togglePreview(l.id, $any($event.target).checked)" /> Aperçu gratuit
+              </label>
+              <button class="btn btn-danger btn-sm" (click)="deleteLesson(l.id)" aria-label="Supprimer la leçon"><app-icon name="x" [size]="14" /></button>
+            </div>
+          } @empty { <p class="muted small">Aucune vidéo pour l'instant.</p> }
+
+          <div class="upload">
+            <div class="field">
+              <label for="video">Ajouter une vidéo (MP4 conseillé)</label>
+              <input id="video" #videoInput type="file" accept="video/mp4,video/webm,video/quicktime" (change)="onVideoSelected($event)" />
+            </div>
+            <div class="field">
+              <label for="vtitle">Titre de la leçon</label>
+              <input id="vtitle" class="input" [(ngModel)]="videoTitle" [ngModelOptions]="{ standalone: true }" />
+            </div>
+            <label class="checkbox small mb"><input type="checkbox" [(ngModel)]="videoPreview" [ngModelOptions]="{ standalone: true }" /> Aperçu gratuit (visible sans achat)</label>
+            @if (uploadProgress() !== null) {
+              <div class="progress mb"><div [style.width.%]="uploadProgress()"></div></div>
+              <p class="small muted">Envoi en cours : {{ uploadProgress() }} %</p>
+            }
+            <button class="btn btn-primary btn-sm" [disabled]="!videoFile || uploadProgress() !== null" (click)="uploadVideo(videoInput)">Envoyer la vidéo</button>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card">
+          <h2 class="h-sub">Documents PDF ({{ c.documents.length }})</h2>
+          @for (d of c.documents; track d.id) {
+            <div class="lesson">
+              <app-icon name="file" [size]="18" />
+              <span class="grow">{{ d.title }}</span>
+              <span class="badge">{{ d.type === 'SUMMARY' ? 'Résumé' : 'Exercices' }}</span>
+              <button class="btn btn-danger btn-sm" (click)="deleteDoc(d.id)" aria-label="Supprimer le document"><app-icon name="x" [size]="14" /></button>
+            </div>
+          } @empty { <p class="muted small">Aucun document.</p> }
+
+          <div class="upload">
+            <div class="field">
+              <label for="doc">Ajouter un PDF</label>
+              <input id="doc" #docInput type="file" accept="application/pdf" (change)="onDocSelected($event)" />
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="dtitle">Titre</label>
+                <input id="dtitle" class="input" [(ngModel)]="docTitle" [ngModelOptions]="{ standalone: true }" />
+              </div>
+              <div class="field">
+                <label for="dtype">Type</label>
+                <select id="dtype" class="input" [(ngModel)]="docType" [ngModelOptions]="{ standalone: true }">
+                  <option value="SUMMARY">Résumé</option>
+                  <option value="EXERCISE">Exercices</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" [disabled]="!docFile || docUploading()" (click)="uploadDoc(docInput)">
+              {{ docUploading() ? 'Envoi…' : 'Envoyer le PDF' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

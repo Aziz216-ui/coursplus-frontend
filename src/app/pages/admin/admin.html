@@ -1,0 +1,246 @@
+<div class="container page">
+  <h1>Administration</h1>
+
+  @if (overview(); as o) {
+    <div class="grid grid-4 mt">
+      <div class="stat"><div class="label">Paiements à valider</div><div class="value" [style.color]="o.pendingPayments ? 'var(--cp-navy)' : ''">{{ o.pendingPayments }}</div></div>
+      <div class="stat"><div class="label">Chiffre d'affaires</div><div class="value">{{ dt(o.grossRevenue) }}</div></div>
+      <div class="stat"><div class="label">Part plateforme</div><div class="value">{{ dt(o.platformRevenue) }}</div></div>
+      <div class="stat"><div class="label">Étudiants / Enseignants / Cours publiés</div><div class="value">{{ o.students }} / {{ o.teachers }} / {{ o.publishedCourses }}</div></div>
+    </div>
+  }
+
+  <div class="tabs mt">
+    <button [class.active]="tab() === 'payments'" (click)="tab.set('payments')">Paiements</button>
+    <button [class.active]="tab() === 'teachers'" (click)="tab.set('teachers')">
+      Enseignants @if (pendingTeachers().length) { <span class="badge warning">{{ pendingTeachers().length }}</span> }
+    </button>
+    <button [class.active]="tab() === 'universities'" (click)="tab.set('universities')">Universités & filières</button>
+    <button [class.active]="tab() === 'courses'" (click)="tab.set('courses')">Cours</button>
+    <button [class.active]="tab() === 'students'" (click)="tab.set('students')">Étudiants</button>
+    <button [class.active]="tab() === 'watch'" (click)="tab.set('watch')">Visionnage</button>
+  </div>
+
+  @switch (tab()) {
+    @case ('payments') {
+      <div class="row mb">
+        <label class="small muted" for="pf">Afficher :</label>
+        <select id="pf" class="input w-220" [ngModel]="paymentFilter()" (ngModelChange)="paymentFilter.set($event); loadPayments()">
+          <option value="PENDING">En attente</option>
+          <option value="PAID">Payés</option>
+          <option value="CANCELLED">Annulés</option>
+          <option value="">Tous</option>
+        </select>
+      </div>
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Réf.</th><th>Étudiant</th><th>Offre</th><th>Montant</th><th>Moyen</th><th>Justificatif</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            @for (p of payments(); track p.id) {
+              <tr>
+                <td><code>{{ p.reference }}</code></td>
+                <td>{{ p.studentName }}<br /><span class="small muted">{{ p.studentEmail }}</span></td>
+                <td>{{ p.label }}</td>
+                <td><strong>{{ dt(p.amount) }}</strong></td>
+                <td>{{ p.method === 'MANUAL' ? 'D17 / manuel' : 'En ligne' }}</td>
+                <td class="small">{{ p.studentNote || '-' }}</td>
+                <td>{{ date(p.createdAt) }}</td>
+                <td>
+                  @if (p.status === 'PENDING') {
+                    <div class="row nowrap">
+                      <button class="btn btn-primary btn-sm" (click)="confirm(p)">Valider</button>
+                      <button class="btn btn-danger btn-sm" (click)="reject(p)">Refuser</button>
+                    </div>
+                  } @else {
+                    <span class="badge" [class.success]="p.status === 'PAID'">{{ statuses[p.status] }}</span>
+                  }
+                </td>
+              </tr>
+            } @empty { <tr><td colspan="8" class="muted center roomy">Aucun paiement.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted mt">Valide un paiement manuel uniquement après avoir vérifié la réception de l'argent (D17, virement, espèces).</p>
+    }
+
+    @case ('teachers') {
+      @if (pendingTeachers().length) {
+        <div class="stack mb">
+          <h2 class="h-sub">Candidatures à vérifier ({{ pendingTeachers().length }})</h2>
+          @for (t of pendingTeachers(); track t.id) {
+            <div class="card">
+              <div class="row between">
+                <div>
+                  <strong>{{ t.fullName }}</strong> <span class="small muted">· {{ t.email }}</span>
+                  <div class="small muted">{{ t.specialty }}{{ t.universityCode ? ' · ' + t.universityCode : '' }}</div>
+                </div>
+                <span class="badge warning">En attente</span>
+              </div>
+              <p class="mt">{{ t.bio }}</p>
+              @if (t.credentialsLink) {
+                <p class="small"><a [href]="t.credentialsLink" target="_blank" rel="noopener noreferrer">Voir le CV / diplôme</a></p>
+              }
+              <div class="field">
+                <label [for]="'note' + t.id" class="small muted">Motif du refus (facultatif, envoyé à l'enseignant)</label>
+                <input [id]="'note' + t.id" class="input" maxlength="500" [(ngModel)]="rejectNotes[t.id]" [name]="'note' + t.id" />
+              </div>
+              <div class="row">
+                <button class="btn btn-primary btn-sm" type="button" (click)="reviewTeacher(t, true)">Valider</button>
+                <button class="btn btn-danger btn-sm" type="button" (click)="reviewTeacher(t, false)">Refuser</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      <div class="grid split">
+        <div class="card table-wrap">
+          <table class="table">
+            <thead><tr><th>Nom</th><th>Spécialité</th><th>Abonnement</th><th>Statut</th><th></th></tr></thead>
+            <tbody>
+              @for (t of reviewedTeachers(); track t.id) {
+                <tr>
+                  <td><strong>{{ t.fullName }}</strong><br /><span class="small muted">{{ t.email }}</span></td>
+                  <td>{{ t.specialty }}</td>
+                  <td>{{ t.monthlyPrice ? dt(t.monthlyPrice) + '/mois' : '-' }}</td>
+                  <td>
+                    @if (t.approvalStatus === 'REJECTED') { <span class="badge danger">Refusé</span> }
+                    @else if (t.active) { <span class="badge success">Actif</span> }
+                    @else { <span class="badge danger">Désactivé</span> }
+                  </td>
+                  <td>
+                    @if (t.approvalStatus === 'REJECTED') {
+                      <button class="btn btn-ghost btn-sm" (click)="reviewTeacher(t, true)">Valider finalement</button>
+                    } @else {
+                      <button class="btn btn-ghost btn-sm" (click)="toggleActive(t)">{{ t.active ? 'Désactiver' : 'Réactiver' }}</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <form class="card" (ngSubmit)="createTeacher()">
+          <h2 class="h-sub">Ajouter un enseignant</h2>
+          <div class="field"><label for="tn">Nom complet</label><input id="tn" name="fullName" class="input" [(ngModel)]="newTeacher.fullName" required /></div>
+          <div class="field"><label for="te">Email</label><input id="te" name="email" type="email" class="input" [(ngModel)]="newTeacher.email" required /></div>
+          <div class="field"><label for="tp">Mot de passe provisoire</label><input id="tp" name="password" class="input" [(ngModel)]="newTeacher.password" required minlength="6" /></div>
+          <div class="field"><label for="ts">Spécialité</label><input id="ts" name="specialty" class="input" [(ngModel)]="newTeacher.specialty" placeholder="Ex. Médecin" /></div>
+          <div class="field"><label for="tm">Abonnement mensuel (DT)</label><input id="tm" name="monthlyPrice" type="number" min="0" class="input" [(ngModel)]="newTeacher.monthlyPrice" /></div>
+          <button class="btn btn-primary btn-block">Créer le compte</button>
+        </form>
+      </div>
+    }
+
+    @case ('universities') {
+      <div class="grid split">
+        <div class="stack">
+          @for (u of universities(); track u.id) {
+            <div class="card">
+              <h2 class="h-sub">{{ u.code }} <span class="muted small dim">, {{ u.name }}</span></h2>
+              <div class="row">
+                @for (t of u.tracks; track t.id) {
+                  <span class="badge primary">{{ t.name }} , {{ t.monthlyPrice ? dt(t.monthlyPrice) + '/mois' : 'pas d\'abonnement' }}</span>
+                } @empty { <span class="muted small">Aucune filière</span> }
+              </div>
+            </div>
+          }
+        </div>
+        <div class="stack">
+          <form class="card" (ngSubmit)="createUniversity()">
+            <h2 class="h-sub">Ajouter une université</h2>
+            <div class="field"><label for="uc">Code</label><input id="uc" name="code" class="input" [(ngModel)]="newUni.code" placeholder="Ex. IHEC" required /></div>
+            <div class="field"><label for="un">Nom</label><input id="un" name="name" class="input" [(ngModel)]="newUni.name" required /></div>
+            <button class="btn btn-primary btn-block">Ajouter</button>
+          </form>
+          <form class="card" (ngSubmit)="createTrack()">
+            <h2 class="h-sub">Ajouter une filière</h2>
+            <div class="field">
+              <label for="tu">Université</label>
+              <select id="tu" name="universityId" class="input" [(ngModel)]="newTrack.universityId" required>
+                <option [ngValue]="null">Choisir</option>
+                @for (u of universities(); track u.id) { <option [ngValue]="u.id">{{ u.code }}</option> }
+              </select>
+            </div>
+            <div class="field"><label for="tname">Nom de la filière</label><input id="tname" name="name" class="input" [(ngModel)]="newTrack.name" required /></div>
+            <div class="field"><label for="tprice">Abonnement filière (DT/mois)</label><input id="tprice" name="monthlyPrice" type="number" min="0" class="input" [(ngModel)]="newTrack.monthlyPrice" /></div>
+            <button class="btn btn-primary btn-block">Ajouter</button>
+          </form>
+        </div>
+      </div>
+    }
+
+    @case ('courses') {
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Cours</th><th>Enseignant</th><th>Filière</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+            @for (c of courses(); track c.id) {
+              <tr>
+                <td><a [routerLink]="['/cours', c.id]">{{ c.title }}</a></td>
+                <td>{{ c.teacherName }}</td>
+                <td>{{ c.universityCode }} {{ c.trackName ? ', ' + c.trackName : '' }}</td>
+                <td>{{ dt(c.price) }}</td>
+                <td>@if (c.published) { <span class="badge success">Publié</span> } @else { <span class="badge warning">Brouillon</span> }</td>
+                <td><button class="btn btn-ghost btn-sm" (click)="togglePublish(c)">{{ c.published ? 'Dépublier' : 'Publier' }}</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @case ('watch') {
+      <p class="muted small">Activité de lecture des 24 dernières heures et des 7 derniers jours. Les comptes suspects (lectures simultanées, visionnage excessif, plusieurs adresses IP) sont en tête.</p>
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Compte</th><th>24 h</th><th>7 jours</th><th>Lectures 24 h</th><th>IP 24 h</th><th>Alerte</th><th></th></tr></thead>
+          <tbody>
+            @for (w of watchRows(); track w.userId) {
+              <tr>
+                <td><strong>{{ w.fullName }}</strong><br><span class="muted small">{{ w.email }}</span></td>
+                <td>{{ hm(w.seconds24h) }}</td><td>{{ hm(w.seconds7d) }}</td><td>{{ w.plays24h }}</td><td>{{ w.ips24h }}</td>
+                <td>@if (w.suspicious) { <span class="badge danger">{{ w.reason }}</span> } @else { <span class="muted small">-</span> }</td>
+                <td><button class="btn btn-ghost btn-sm" type="button" (click)="openWatch(w)">Détail</button></td>
+              </tr>
+            } @empty { <tr><td colspan="7" class="muted center">Aucune lecture enregistrée.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+
+      @if (watchDetail(); as d) {
+        <div class="card mt">
+          <div class="row between">
+            <h2 class="h-sub flush">{{ d.row.fullName }} : détail par leçon</h2>
+            <button class="btn btn-ghost btn-sm" type="button" (click)="watchDetail.set(null)">Fermer</button>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Cours</th><th>Leçon</th><th>Temps regardé</th><th>Position max</th><th>Dernière lecture</th></tr></thead>
+              <tbody>
+                @for (l of d.lessons; track l.lessonId) {
+                  <tr><td>{{ l.courseTitle }}</td><td>{{ l.lessonTitle }}</td><td>{{ hm(l.seconds) }}</td><td>{{ hm(l.maxPosition) }}</td><td>{{ date(l.lastWatchedAt) }}</td></tr>
+                } @empty { <tr><td colspan="5" class="muted center">Aucun détail.</td></tr> }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+    @case ('students') {
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Nom</th><th>Email</th><th>Université</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+            @for (s of students(); track s.id) {
+              <tr>
+                <td>{{ s.fullName }}</td><td>{{ s.email }}</td><td>{{ s.universityCode || '-' }}</td>
+                <td>@if (s.active) { <span class="badge success">Actif</span> } @else { <span class="badge danger">Désactivé</span> }</td>
+                <td><button class="btn btn-ghost btn-sm" (click)="toggleActive(s)">{{ s.active ? 'Désactiver' : 'Réactiver' }}</button></td>
+              </tr>
+            } @empty { <tr><td colspan="5" class="muted center">Aucun étudiant.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

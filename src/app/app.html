@@ -1,0 +1,121 @@
+<a class="skip-link" href="#main" (click)="skipToMain($event)">Aller au contenu</a>
+
+<header class="topbar" [class.scrolled]="scrolled()">
+  <div class="container bar">
+    <a routerLink="/" class="logo" (click)="menuOpen.set(false)">
+      <span class="logo-mark" aria-hidden="true"><app-icon name="logo-book" [size]="22" /></span>
+      <span>Cours<span class="plus">Plus</span></span>
+    </a>
+
+    @if (menuOpen()) { <div class="backdrop" (click)="menuOpen.set(false)" aria-hidden="true"></div> }
+
+    <!-- Desktop : nav "pill" centrale + actions à droite. Mobile : panneau latéral ouvert par le burger. -->
+    <nav id="nav" class="nav" aria-label="Navigation principale" [class.open]="menuOpen()" (click)="menuOpen.set(false)">
+      <div class="nav-pill">
+        <a routerLink="/cours">Cours</a>
+        <a routerLink="/" fragment="enseignants">Enseignants</a>
+        <a routerLink="/" fragment="tarifs">Tarifs</a>
+        <a routerLink="/" fragment="devenir-enseignant" class="only-mobile">Devenir enseignant</a>
+      </div>
+
+      <div class="nav-actions">
+        @if (auth.user(); as user) {
+          @switch (user.role) {
+            @case ('STUDENT') { <a routerLink="/mon-espace" routerLinkActive="active" class="nav-link">Mes cours</a> }
+            @case ('TEACHER') { <a routerLink="/enseignant" routerLinkActive="active" class="nav-link">Espace enseignant</a> }
+            @case ('ADMIN') { <a routerLink="/admin" routerLinkActive="active" class="nav-link">Administration</a> }
+          }
+          <span class="user-chip" [title]="user.email">
+            <span class="avatar" aria-hidden="true">{{ initials(user.fullName) }}</span>
+            <span class="hide-mobile">{{ user.fullName }}</span>
+          </span>
+          <button class="btn btn-ghost btn-sm" type="button" (click)="auth.logout()">Déconnexion</button>
+        } @else {
+          <a routerLink="/connexion" routerLinkActive="active" class="nav-link">Connexion</a>
+          <a routerLink="/inscription" class="nav-link">Créer un compte</a>
+          <a routerLink="/cours" class="btn btn-primary cta-nav">Voir les cours
+            <span class="arrow-circle" aria-hidden="true"><app-icon name="arrow-up-right" [size]="14" /></span>
+          </a>
+        }
+      </div>
+    </nav>
+
+    <div class="bar-tools">
+      @if (auth.isLoggedIn()) { <app-notification-bell /> }
+      <button class="burger" type="button" (click)="menuOpen.set(!menuOpen())"
+              aria-label="Menu" aria-controls="nav" [attr.aria-expanded]="menuOpen()">
+        <app-icon [name]="menuOpen() ? 'x' : 'menu'" [size]="22" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a routerLink="/" class="logo"><span class="logo-mark light" aria-hidden="true"><app-icon name="logo-book" [size]="22" /></span><span>Cours<span class="plus">Plus</span></span></a>
+        <p class="tagline">Des cours donnés par ceux qui ont déjà réussi les mêmes cours, adaptés au programme de ton école.</p>
+      </div>
+      <div>
+        <h3>Plateforme</h3>
+        <ul>
+          <li><a routerLink="/cours">Catalogue</a></li>
+          <li><a routerLink="/" fragment="tarifs">Tarifs</a></li>
+          <li><a routerLink="/" fragment="enseignants">Enseignants</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Aide</h3>
+        <ul>
+          <li><a routerLink="/" fragment="comment-ca-marche">Comment ça marche</a></li>
+          <li><a routerLink="/" fragment="faq">Questions fréquentes</a></li>
+          <li><a routerLink="/" fragment="devenir-enseignant">Devenir enseignant</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          @if (contact.email) { <li><a [href]="'mailto:' + contact.email">E-mail</a></li> }
+          @if (whatsappLink) { <li><a [href]="whatsappLink" target="_blank" rel="noopener">WhatsApp</a></li> }
+          <!-- Réseaux sociaux : affichés seulement quand l'URL est renseignée dans site-config.ts -->
+          @if (contact.facebook) { <li><a [href]="contact.facebook" target="_blank" rel="noopener">Facebook</a></li> }
+          @if (contact.instagram) { <li><a [href]="contact.instagram" target="_blank" rel="noopener">Instagram</a></li> }
+        </ul>
+      </div>
+      <div>
+        <h3>Moyens de paiement</h3>
+        <ul>
+          <li>Carte bancaire</li>
+          <li>e-DINAR</li>
+          <li>D17</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {{ year }} CoursPlus · Conçu en Tunisie</span>
+      <nav class="legal-links" aria-label="Informations légales">
+        <a routerLink="/cgv">Conditions générales de vente</a>
+        <a routerLink="/mentions-legales">Mentions légales</a>
+        <a routerLink="/confidentialite">Politique de confidentialité</a>
+      </nav>
+    </div>
+    <p class="footer-credit">Photos : Pexels ({{ photoCredits }}).</p>
+  </div>
+</footer>
+
+@if (whatsappLink) {
+  <a class="wa-float" [href]="whatsappLink" target="_blank" rel="noopener" aria-label="Écrire sur WhatsApp">
+    <app-icon name="whatsapp" [size]="24" /><span class="wa-label">WhatsApp</span>
+  </a>
+}
+
+<div class="toasts" role="status" aria-live="polite">
+  @for (t of toast.toasts(); track t.id) {
+    <button type="button" class="toast" [class]="t.kind" (click)="toast.dismiss(t.id)">{{ t.text }}</button>
+  }
+</div>

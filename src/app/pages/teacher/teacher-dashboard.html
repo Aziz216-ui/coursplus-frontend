@@ -1,0 +1,137 @@
+<div class="container page">
+  <div class="row between">
+    <div>
+      <h1>Espace enseignant</h1>
+      <p class="muted flush">{{ auth.user()?.fullName }}, {{ role() }}</p>
+    </div>
+    @if (approved()) {
+      <a routerLink="/enseignant/cours/nouveau" class="btn btn-primary">+ Nouveau cours</a>
+    }
+  </div>
+
+  @if (auth.user()?.approvalStatus === 'PENDING') {
+    <div class="card mt" role="status">
+      <h2 class="h-sub">Ton compte est en cours de vérification</h2>
+      <p class="muted flush">L'équipe CoursPlus vérifie ta candidature. Tu seras prévenu ici, avec une notification, dès la décision. Tu pourras alors créer et publier tes cours.</p>
+    </div>
+  } @else if (auth.user()?.approvalStatus === 'REJECTED') {
+    <div class="error-box mt" role="alert">
+      <strong>Ta candidature n'a pas été retenue.</strong>
+      @if (auth.user()?.reviewNote) { <span> {{ auth.user()?.reviewNote }}</span> }
+    </div>
+  }
+
+  <div class="tabs mt">
+    <button [class.active]="tab() === 'overview'" (click)="tab.set('overview')">Mes ventes</button>
+    <button [class.active]="tab() === 'courses'" (click)="tab.set('courses')">Mes cours ({{ courses().length }})</button>
+    <button [class.active]="tab() === 'students'" (click)="tab.set('students')">Mes étudiants</button>
+    <button [class.active]="tab() === 'profile'" (click)="tab.set('profile')">Profil & abonnement</button>
+  </div>
+
+  @switch (tab()) {
+    @case ('overview') {
+      @if (stats(); as s) {
+        <div class="grid grid-4">
+          <div class="stat"><div class="label">Mes revenus ({{ s.teacherSharePercent }} %)</div><div class="value">{{ dt(s.teacherRevenue) }}</div></div>
+          <div class="stat"><div class="label">Ventes totales</div><div class="value">{{ s.totalSales }}</div></div>
+          <div class="stat"><div class="label">Étudiants</div><div class="value">{{ s.studentCount }}</div></div>
+          <div class="stat"><div class="label">Abonnés actifs</div><div class="value">{{ s.activeSubscribers }}</div></div>
+        </div>
+
+        <div class="card mt table-wrap">
+          <h2 class="h-sub">Ventes par cours</h2>
+          <table class="table">
+            <thead><tr><th>Cours</th><th>Ventes</th><th>Mes revenus</th></tr></thead>
+            <tbody>
+              @for (c of s.perCourse; track c.courseId) {
+                <tr><td>{{ c.title }}</td><td>{{ c.sales }}</td><td><strong>{{ dt(c.revenue) }}</strong></td></tr>
+              } @empty { <tr><td colspan="3" class="muted center">Aucun cours.</td></tr> }
+            </tbody>
+          </table>
+          <p class="small muted tight-top">Les abonnements à ton profil sont comptés dans « Mes revenus » mais pas dans un cours précis.</p>
+        </div>
+
+        <div class="card mt table-wrap">
+          <h2 class="h-sub">Dernières ventes</h2>
+          <table class="table">
+            <thead><tr><th>Date</th><th>Étudiant</th><th>Offre</th><th>Prix</th><th>Ma part</th></tr></thead>
+            <tbody>
+              @for (v of s.recentSales; track v.reference) {
+                <tr>
+                  <td>{{ date(v.paidAt) }}</td><td>{{ v.studentName }}</td><td>{{ v.label }}</td>
+                  <td>{{ dt(v.amount) }}</td><td><strong>{{ dt(v.teacherShare) }}</strong></td>
+                </tr>
+              } @empty { <tr><td colspan="5" class="muted center">Pas encore de vente. Partage tes cours !</td></tr> }
+            </tbody>
+          </table>
+        </div>
+      } @else { <div class="loading">Chargement…</div> }
+    }
+
+    @case ('courses') {
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Cours</th><th>Filière</th><th>Contenu</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+            @for (c of courses(); track c.id) {
+              <tr>
+                <td><strong>{{ c.title }}</strong></td>
+                <td>{{ c.universityCode }} {{ c.trackName ? ', ' + c.trackName : '' }}</td>
+                <td>{{ c.lessonCount }} vidéo(s), {{ c.documentCount }} PDF</td>
+                <td>{{ dt(c.price) }}</td>
+                <td>
+                  @if (c.published) { <span class="badge success">Publié</span> }
+                  @else { <span class="badge warning">Brouillon</span> }
+                </td>
+                <td><a [routerLink]="['/enseignant/cours', c.id]" class="btn btn-ghost btn-sm">Modifier</a></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="center muted roomy">
+                Tu n'as pas encore de cours.
+                @if (approved()) { <a routerLink="/enseignant/cours/nouveau">Crée ton premier cours</a>. }
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @case ('students') {
+      <div class="card table-wrap">
+        <table class="table">
+          <thead><tr><th>Étudiant</th><th>Université</th><th>Accès</th><th>Depuis</th><th>Jusqu'au</th><th></th></tr></thead>
+          <tbody>
+            @for (st of students(); track $index) {
+              <tr>
+                <td><strong>{{ st.fullName }}</strong><br /><span class="small muted">{{ st.email }}</span></td>
+                <td>{{ st.universityCode || '-' }}</td>
+                <td>{{ st.accessLabel }}</td>
+                <td>{{ date(st.since) }}</td>
+                <td>{{ st.until ? date(st.until) : 'À vie' }}</td>
+                <td>@if (st.active) { <span class="badge success">Actif</span> } @else { <span class="badge">Expiré</span> }</td>
+              </tr>
+            } @empty { <tr><td colspan="6" class="muted center">Pas encore d'étudiant.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @case ('profile') {
+      <form class="card form-narrow" (ngSubmit)="saveProfile()">
+        <div class="field">
+          <label for="spec">Spécialité affichée</label>
+          <input id="spec" name="specialty" class="input" [(ngModel)]="specialty" placeholder="Ex. Ingénieur financier" />
+        </div>
+        <div class="field">
+          <label for="bio">Présentation</label>
+          <textarea id="bio" name="bio" class="input" [(ngModel)]="bio" placeholder="Ton parcours, ta façon d'expliquer…"></textarea>
+        </div>
+        <div class="field">
+          <label for="price">Prix de l'abonnement mensuel à tous tes cours (DT)</label>
+          <input id="price" name="monthlyPrice" type="number" min="0" step="1" class="input" [(ngModel)]="monthlyPrice" placeholder="Vide = pas d'abonnement" />
+        </div>
+        <button class="btn btn-primary" [disabled]="saving()">Enregistrer</button>
+      </form>
+    }
+  }
+</div>

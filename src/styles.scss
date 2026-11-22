@@ -1,0 +1,347 @@
+/* ============================================================
+   CoursPlus : design system « pro et cozy ».
+   Les jetons --cp-* sont la source de vérité ; les anciens noms
+   (--ink, --primary, --line…) y sont rattachés plus bas pour que
+   toutes les pages héritent du même look.
+   ============================================================ */
+
+:root {
+  /* ===== Palette 60-30-10 : STRICTEMENT 3 couleurs de marque ===== */
+  --cp-cream: #F7F5EF;  /* 60 % : fond de page et sections */
+  --cp-navy:  #0A3A73;  /* 30 % : titres, header, cartes sombres, footer */
+  --cp-sun:   #F5B82E;  /* 10 % : CTA principaux, surlignage, badges actifs (texte dessus : toujours navy) */
+  /* Nuances autorisées (pas de nouvelles couleurs) */
+  --cp-navy-90: #0F1E33; /* texte courant */
+  --cp-navy-10: #E6ECF4; /* fonds de puces, bordures */
+  --cp-white:   #FFFFFF; /* cartes */
+  --cp-on-navy: rgba(255, 255, 255, .86);       /* texte courant sur fond navy (contraste > 8:1) */
+  --cp-on-navy-muted: rgba(255, 255, 255, .72); /* texte secondaire sur fond navy (contraste > 6:1) */
+
+  /* Rattachement des anciens jetons à la palette (toutes les pages héritent) */
+  --cp-bg: var(--cp-cream);
+  --cp-surface: var(--cp-white);
+  --cp-surface-warm: var(--cp-cream);
+  --cp-primary: var(--cp-navy);
+  --cp-primary-700: var(--cp-navy);
+  --cp-primary-50: var(--cp-navy-10);
+  --cp-accent: var(--cp-sun);
+  --cp-accent-600: var(--cp-sun);
+  --cp-accent-700: color-mix(in srgb, var(--cp-sun) 86%, #000); /* sun un peu plus foncé : survol */
+  --cp-gold: var(--cp-sun);
+  --cp-gold-50: color-mix(in srgb, var(--cp-sun) 18%, var(--cp-white));
+  --cp-text: var(--cp-navy-90);
+  --cp-text-2: #33425A;
+  --cp-text-muted: #56637A;
+  --cp-border: var(--cp-navy-10);
+  --cp-border-strong: #B3C3D8;
+  /* États fonctionnels des formulaires et paiements (hors pages de marque) */
+  --cp-success: #1E7A55;
+  --cp-danger: #B3261E;
+
+  /* Université : une seule couleur de marque (navy) */
+  --uni-esprit: var(--cp-navy);
+  --uni-esc: var(--cp-navy);
+  --uni-fmt: var(--cp-navy);
+  --uni-lycee: var(--cp-navy);
+
+  /* Typo */
+  --font-display: 'Plus Jakarta Sans', 'Mulish', system-ui, sans-serif;
+  --font-arabic: 'Reem Kufi', 'Noto Kufi Arabic', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Mulish', system-ui, sans-serif;
+
+  /* Formes */
+  --radius-sm: 10px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(15, 30, 51, .06);
+  --shadow-md: 0 6px 24px rgba(15, 30, 51, .08);
+  --shadow-lg: 0 16px 40px rgba(15, 30, 51, .14);
+
+  /* Layout */
+  --container: 1200px;
+  --gutter: clamp(20px, 5vw, 48px);
+  --section-y: clamp(56px, 8vw, 96px);
+
+  /* ----- Alias des anciens noms (pages existantes) ----- */
+  --ink: var(--cp-text);
+  --ink-2: var(--cp-text-2);
+  --muted: var(--cp-text-muted);
+  --line: var(--cp-border);
+  --line-soft: #E8EEF6;
+  --line-strong: var(--cp-border-strong);
+  --bg: var(--cp-bg);
+  --surface: var(--cp-surface);
+  --neutral-soft: #E8EEF6;
+  --track: #DCE6F2;
+  --on-solid: #FFFFFF;
+  --video-bg: #0b1220;
+  --video-frame: #000000;
+
+  --primary: var(--cp-primary);
+  --primary-dark: var(--cp-primary-700);
+  --primary-soft: var(--cp-primary-50);
+  --accent: var(--cp-accent);
+  --accent-dark: var(--cp-accent-600);
+  --accent-ink: var(--cp-navy);
+  --accent-soft: var(--cp-gold-50);
+
+  --danger: var(--cp-danger);
+  --danger-soft: #FCE8E6;
+  --danger-hover: #F8D3CF;
+  --success: var(--cp-success);
+  --success-ink: #17603F;
+  --success-soft: #E1F2EA;
+  --warning: var(--cp-navy);
+  --warning-ink: var(--cp-navy);
+  --warning-soft: var(--cp-gold-50);
+
+  --focus: var(--cp-sun);
+  --focus-on-dark: var(--cp-sun);
+
+  --topbar-bg: color-mix(in srgb, var(--cp-bg) 88%, transparent);
+  --scrim: color-mix(in srgb, var(--cp-text) 55%, transparent);
+  --watermark: color-mix(in srgb, #fff 40%, transparent);
+  --cover-badge: color-mix(in srgb, #fff 22%, transparent);
+  --shadow: var(--shadow-sm), var(--shadow-md);
+  --shadow-modal: 0 20px 60px color-mix(in srgb, var(--cp-text) 30%, transparent);
+
+  --radius: var(--radius-md);
+
+  /* échelle d'espacement (4/8) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px;
+
+  /* mouvement */
+  --t-fast: 120ms; --t-base: 180ms; --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* texte */
+  --font: var(--font-body);
+  --fs-small: 0.875rem; --fs-body: 1rem; --fs-lead: 1.2rem; --measure: 62ch; --target: 44px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; overflow-x: clip; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--primary-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 { margin: 0 0 0.45em; line-height: 1.15; letter-spacing: -0.02em; font-family: var(--font-display); font-weight: 800; color: var(--ink); overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 4.2vw, 3.2rem); font-weight: 800; }
+h2 { font-size: clamp(1.5rem, 2.6vw, 2rem); }
+h3 { font-size: 1.15rem; }
+p { margin: 0 0 0.8em; }
+em { font-style: normal; }
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  /* Focus : anneau sun 2px + liseré navy interne pour rester visible sur fond clair comme sur fond navy */
+  outline: 2px solid var(--cp-sun);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--cp-navy);
+  border-radius: var(--radius-sm);
+}
+
+main:focus { outline: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.skip-link {
+  position: absolute; left: var(--s-4); top: -64px; z-index: 200; background: var(--ink); color: var(--on-solid);
+  padding: var(--s-3) var(--s-4); border-radius: var(--radius-sm); font-weight: 700;
+}
+.skip-link:focus { top: var(--s-3); }
+
+/* Container unique : même gouttière pour header, sections et footer (≥ 20px sur mobile) */
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: clamp(20px, 5vw, 48px); box-sizing: border-box; }
+.page { padding-block: var(--s-6) var(--s-8); }
+.muted { color: var(--muted); }
+.small { font-size: var(--fs-small); }
+.center { text-align: center; }
+.row { display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.stack { display: flex; flex-direction: column; gap: var(--s-3); }
+.spacer { flex: 1; }
+.grow { flex: 1; min-width: 0; }
+.mt { margin-top: var(--s-5); }
+.mb { margin-bottom: var(--s-5); }
+.mt-lg { margin-top: var(--s-7); }
+.flush { margin: 0; }
+.tight { margin-top: 8px; }
+.with-icon { display: inline-flex; align-items: center; gap: var(--s-2); }
+.dim { font-weight: 500; }
+.lead { font-size: var(--fs-lead); color: var(--ink-2); max-width: var(--measure); margin-bottom: var(--s-5); }
+
+/* ---------- Boutons : un seul style principal, huit états ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  min-height: var(--target); padding: 12px 20px; border-radius: var(--radius-pill); border: 1px solid transparent;
+  font: inherit; font-weight: 650; font-size: 0.95rem; line-height: 1.2; cursor: pointer;
+  transition: background-color var(--t-base) var(--ease), border-color var(--t-base) var(--ease), transform var(--t-fast) var(--ease), color var(--t-base) var(--ease);
+  text-decoration: none !important; white-space: nowrap; touch-action: manipulation;
+}
+/* Survol : léger lift + ombre douce (couleur déjà animée par la transition) */
+.btn:hover:not(:disabled):not([aria-disabled='true']) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15, 30, 51, .16); }
+.btn:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.btn:disabled, .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: var(--on-solid); }
+.btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+.btn-outline:hover:not(:disabled) { background: var(--cp-primary-50); }
+.btn-gold { background: var(--cp-sun); color: var(--cp-navy); }
+.btn-gold:hover:not(:disabled) { background: var(--cp-accent-700); }
+.btn-lg { min-height: 52px; padding: 14px 28px; font-size: 1rem; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-accent { background: var(--cp-sun); color: var(--cp-navy); } /* texte sur sun : toujours navy */
+.btn-accent:hover:not(:disabled) { background: var(--accent-ink); }
+.btn-ghost { background: transparent; color: var(--primary); border-color: var(--line-strong); }
+.btn-ghost:hover:not(:disabled) { background: var(--cp-primary-50); border-color: var(--primary); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); }
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+.btn-sm { min-height: 36px; padding: 8px 16px; font-size: var(--fs-small); }
+.btn-block { width: 100%; }
+.btn-icon { padding: 0; width: var(--target); min-width: var(--target); }
+@media (pointer: coarse) { .btn-sm { min-height: var(--target); } }
+
+/* ---------- Cartes ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--s-5);
+}
+.card.flat { box-shadow: none; }
+
+.grid { display: grid; gap: var(--s-4); }
+.grid-3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 700;
+  background: var(--neutral-soft); color: var(--ink-2);
+}
+.badge.primary { background: var(--primary-soft); color: var(--primary-dark); }
+.badge.accent { background: var(--accent-soft); color: var(--accent-ink); }
+.badge.success { background: var(--success-soft); color: var(--success-ink); }
+.badge.warning { background: var(--warning-soft); color: var(--warning-ink); }
+.badge.danger { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- Formulaires ---------- */
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--s-4); }
+.field label { font-weight: 650; font-size: var(--fs-small); color: var(--ink-2); }
+.input, select.input, textarea.input {
+  width: 100%; min-height: 48px; padding: 12px 16px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); background: var(--surface); font: inherit; color: var(--ink);
+  transition: border-color var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+}
+.input::placeholder { color: var(--muted); opacity: 1; }
+.input:hover:not(:disabled) { border-color: var(--ink-2); }
+.input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; border-color: var(--primary); }
+.input:disabled { background: var(--cp-surface-warm); border-style: dashed; cursor: not-allowed; opacity: 0.6; }
+.field-error { color: var(--cp-danger); font-size: var(--fs-small); font-weight: 600; margin: 0; }
+.field-hint { color: var(--muted); font-size: 0.8rem; margin: 0; }
+.input.invalid { border-color: var(--cp-danger); }
+textarea.input { min-height: 110px; resize: vertical; }
+.checkbox { display: flex; gap: var(--s-2); align-items: center; font-weight: 500; cursor: pointer; min-height: var(--target); }
+.form-grid { display: grid; gap: 0 var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.error-box {
+  background: var(--danger-soft); color: var(--danger); padding: 12px 16px;
+  border-radius: var(--radius-sm); font-size: 0.92rem; margin-bottom: var(--s-4);
+}
+.info-box {
+  background: var(--primary-soft); color: var(--primary-dark); padding: 12px 16px;
+  border-radius: var(--radius-sm); font-size: 0.95rem;
+}
+
+/* ---------- Onglets ---------- */
+.tabs { display: flex; gap: var(--s-1); border-bottom: 1px solid var(--line); margin-bottom: var(--s-5); overflow-x: auto; }
+.tabs button {
+  background: none; border: none; font: inherit; font-weight: 650; color: var(--muted);
+  min-height: var(--target); padding: 12px 16px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: color var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button.active { color: var(--ink); border-bottom-color: var(--primary); }
+
+/* ---------- Tableaux : têtes en casse normale ---------- */
+.table-wrap { overflow-x: auto; }
+table.table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.table th {
+  text-align: left; font-size: var(--fs-small); font-weight: 650;
+  color: var(--muted); padding: 12px; border-bottom: 1px solid var(--line);
+}
+.table td { padding: 12px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: color-mix(in srgb, var(--primary-soft) 45%, transparent); }
+
+/* ---------- Statistiques ---------- */
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s-4) var(--s-5); }
+.stat .value { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .label { color: var(--muted); font-size: var(--fs-small); font-weight: 600; }
+
+/* ---------- États vides et chargement ---------- */
+.empty { text-align: center; padding: var(--s-7) var(--s-5); color: var(--muted); }
+.empty-icon {
+  display: inline-flex; margin-bottom: var(--s-3);
+  color: var(--primary-dark);
+}
+.loading { padding: var(--s-6); text-align: center; color: var(--muted); }
+
+.price { font-weight: 800; font-size: 1.1rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.price small { font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-left: 2px; }
+
+/* ---------- Modale ---------- */
+.overlay {
+  position: fixed; inset: 0; background: var(--scrim); z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: var(--s-4);
+}
+.modal { background: var(--surface); border-radius: var(--radius); max-width: 480px; width: 100%; padding: var(--s-5); box-shadow: var(--shadow-modal); }
+
+.progress { height: 8px; border-radius: var(--radius-pill); background: var(--track); overflow: hidden; }
+.progress > div { height: 100%; background: var(--primary); transform-origin: left; }
+
+@media (max-width: 640px) {
+  .page { padding-block: var(--s-5) var(--s-7); }
+  .card { padding: var(--s-4); }
+  .hide-mobile { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .btn:active:not(:disabled), .btn:hover:not(:disabled) { transform: none; }
+}
+
+/* ---------- Utilitaires (remplacent les styles en ligne) ---------- */
+.w-220 { max-width: 220px; }
+.nowrap { flex-wrap: nowrap; }
+.roomy { padding: var(--s-6); }
+.split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+.narrow { max-width: 560px; }
+.narrow.wide { max-width: 660px; }
+.text-right { text-align: right; }
+.price-xl { font-size: 2rem; font-variant-numeric: tabular-nums; }
+.justify-center { justify-content: center; }
+.head-gap { margin: var(--s-2) 0 var(--s-5); }
+.form-narrow { max-width: 640px; }
+.tight-top { margin: var(--s-3) 0 0; }
+.ml-sm { margin-left: 8px; }
+.empty-icon + h1 { margin-top: 0; }
+@media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.h-sub { font-size: 1.1rem; }
+
+
+/* Material 3 : couches d'état semantiques sur les boutons pleins */
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--cp-primary) 88%, #000); }
+.btn-accent:hover:not(:disabled) { background: var(--cp-accent-700); }
+.btn:focus-visible { outline: 2px solid var(--cp-sun); outline-offset: 2px; box-shadow: 0 0 0 2px var(--cp-navy); }
+

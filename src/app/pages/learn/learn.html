@@ -1,0 +1,87 @@
+@if (course(); as c) {
+  <div class="container page">
+    <div class="row between mb">
+      <div>
+        <a [routerLink]="['/cours', c.id]" class="small muted back with-icon"><app-icon name="arrow-left" [size]="16" /> {{ c.title }}</a>
+        <h1 class="tight">{{ current()?.title }}</h1>
+      </div>
+      @if (!c.hasAccess) { <a [routerLink]="['/cours', c.id]" class="btn btn-accent">Débloquer le cours</a> }
+    </div>
+
+    <div class="layout">
+      <div class="col">
+        <div class="player" #player (contextmenu)="$event.preventDefault()">
+          @if (locked()) {
+            <div class="locked">
+              <span class="lock-badge"><app-icon name="lock" [size]="26" /></span>
+              <p>Cette leçon est réservée aux étudiants qui ont acheté le cours ou un abonnement.</p>
+              <a [routerLink]="['/cours', c.id]" class="btn btn-accent">Voir les formules</a>
+            </div>
+          } @else if (tampered()) {
+            <div class="locked" role="alert">
+              <span class="lock-badge"><app-icon name="alert" [size]="26" /></span>
+              <p>Le filigrane de protection a été modifié. Recharge la page pour reprendre la lecture.</p>
+            </div>
+          } @else if (videoUrl(); as url) {
+            <video [src]="url" controls autoplay playsinline controlsList="nodownload noplaybackrate nofullscreen"
+                   disablePictureInPicture (ended)="next()" (error)="onVideoError()"></video>
+            <!-- Mosaïque de filigranes fins (impossible à rogner) + filigrane mobile plus visible -->
+            <div class="wm-tiles" aria-hidden="true">
+              @for (i of tiles; track i) { <span>{{ watermark() }}</span> }
+            </div>
+            <span class="watermark" [style.top.%]="wmPos().top" [style.left.%]="wmPos().left" aria-hidden="true">{{ watermark() }}</span>
+            @if (canFullscreen) {
+              <button type="button" class="fs-btn" (click)="toggleFullscreen(player)" aria-label="Plein écran">
+                <app-icon name="video" [size]="16" /> Plein écran
+              </button>
+            }
+          } @else {
+            <div class="locked" role="status"><p>Chargement de la vidéo…</p></div>
+          }
+        </div>
+
+        <div class="row between mt">
+          <span class="muted small">Leçon {{ index() + 1 }} sur {{ c.lessons.length }}</span>
+          @if (index() < c.lessons.length - 1) {
+            <button class="btn btn-ghost btn-sm" type="button" (click)="next()">Leçon suivante <app-icon name="chevron-right" [size]="16" /></button>
+          }
+        </div>
+
+        @if (c.documents.length) {
+          <div class="card mt">
+            <h2 class="h-sub">Documents du cours</h2>
+            @if (c.hasAccess) {
+              <div class="docs">
+                @for (d of c.documents; track d.id) {
+                  <button class="doc" type="button" (click)="openDocument(d.id)">
+                    <app-icon name="file" [size]="20" />
+                    <span class="grow doc-text"><strong>{{ d.title }}</strong>
+                      <span class="small muted">{{ d.type === 'SUMMARY' ? 'Résumé' : 'Exercices' }}, PDF</span></span>
+                    <span class="small">Ouvrir</span>
+                  </button>
+                }
+              </div>
+            } @else {
+              <p class="muted small with-icon flush"><app-icon name="lock" [size]="16" /> Les résumés et exercices sont disponibles après l’achat.</p>
+            }
+          </div>
+        }
+      </div>
+
+      <aside class="card list" aria-label="Programme du cours">
+        <h2 class="h-sub">Programme</h2>
+        @for (l of c.lessons; track l.id) {
+          <button class="item" type="button" [class.active]="current()?.id === l.id"
+                  [attr.aria-current]="current()?.id === l.id ? 'true' : null" (click)="open(l)">
+            <span class="num">{{ l.position }}</span>
+            <span class="grow">{{ l.title }}</span>
+            @if (!c.hasAccess && !l.freePreview) { <app-icon name="lock" [size]="16" /><span class="sr-only">Verrouillée</span> }
+            @if (!c.hasAccess && l.freePreview) { <span class="badge accent">Gratuit</span> }
+          </button>
+        }
+      </aside>
+    </div>
+  </div>
+} @else {
+  <div class="loading" role="status">Chargement…</div>
+}
